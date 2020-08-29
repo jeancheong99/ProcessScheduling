@@ -47,6 +47,6 @@ public class ProcessScheduling {
                            "-----------");
         System.out.println("Non-preemtive SJF:");
         NonPreemptiveSJF a1 = new NonPreemptiveSJF();
-        a1.simulate(arrivalTime, burstTime, counter);
+        a1.schedule(arrivalTime, burstTime, counter);
     }
 }
