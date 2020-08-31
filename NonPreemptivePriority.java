@@ -21,7 +21,8 @@ class NonPreemptivePriority {
         arrValueList = new ArrayList<>(sortedArrival.values());
         arrKey = sortedArrival.keySet(); 
         arrKeyList = new ArrayList<>(arrKey);
-        timestamp.add(counter,0); counter++;
+        timestamp.add(counter,0); 
+        counter++;
 
         while(!(executionList.size() == numProcess)) {     
             //selecting the first process to be executed at time = 0
