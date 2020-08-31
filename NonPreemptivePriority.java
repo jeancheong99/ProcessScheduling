@@ -70,8 +70,6 @@ class NonPreemptivePriority {
             }
             timestamp.add(counter, currTime);
         }
-
-
         ganttChart(numProcess);
     }  
     public LinkedHashMap<String, Integer> sortByValue(int numProcess, LinkedHashMap<String, Integer> temp){
