@@ -27,7 +27,7 @@ class NonPreemptiveSJF{
         arrKey = sortedArrival.keySet(); 
         arrKeyList = new ArrayList<>(arrKey);
         
-        for(int a=0; a<= position; a++) {
+        while(!(execProcess.size() == numProcess)) {
             currArrTime = arrValue.get(position);
             prevPosition = position;
             for(int i=position; i<numProcess-1; i++) {
