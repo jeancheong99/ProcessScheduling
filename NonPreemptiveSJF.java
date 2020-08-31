@@ -9,7 +9,7 @@ class NonPreemptiveSJF{
     private List<String> execProcess = new ArrayList<>();
     private List<Integer> timestamp = new ArrayList<>();
     private List<Integer> burstValue = new ArrayList<>();
-    private LinkedHashMap<String, Integer> sortedBurst = new LinkedHashMap();
+    private LinkedHashMap<String, Integer> sortedBurst = new LinkedHashMap<>();
     private Set<String> SBKey;
     private List<String> SBKeyList;
 
@@ -32,36 +32,27 @@ class NonPreemptiveSJF{
             prevPosition = position;
             for(int i=position; i<numProcess-1; i++) {
                 if(currArrTime == arrValue.get(i+1)) {
-                    //System.out.println("yes"+i);
                     count++;
                     position = i+1;
                 }
                 else{
                     position++;
-                    //System.out.println("no");
                     break;
                 }     
             }
             if(count == 0) {
-                //System.out.println("count==0");
-                //System.out.println(arrKeyList.get(prevPosition));
                 execProcess.add(arrKeyList.get(prevPosition));               
             }
             else{
-                //System.out.println(count);
                 for(int k=0; k<=count; k++, prevPosition++) {
-                    //System.out.println(prevPosition);
                     sortedBurst.put(arrKeyList.get(prevPosition), burstTime.get(arrKeyList.get(prevPosition)));
-                    //System.out.println(sortedBurst.toString());
                 }
                 sortedBurst = sortByValue(count, sortedBurst);
                 SBKey = sortedBurst.keySet();
                 SBKeyList = new ArrayList<>(SBKey);
-                //System.out.println("SBKeyList " +SBKeyList.toString());
 
                 for(int m=0; m<SBKeyList.size(); m++) {
                     execProcess.add(SBKeyList.get(m));
-                    //System.out.println(execProcess.toString());
                 }                
             }
             count = 0; 
