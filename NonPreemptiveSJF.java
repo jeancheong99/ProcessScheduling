@@ -104,5 +104,6 @@ class NonPreemptiveSJF{
             System.out.print(new DecimalFormat("00").format(timestamp.get(i)) + "       ");
         }
         System.out.print("\n");
+        System.out.println("Testing again");
     }       
 }
