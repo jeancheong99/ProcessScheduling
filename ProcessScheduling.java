@@ -46,7 +46,11 @@ public class ProcessScheduling {
         System.out.println("Gantt Chart\n" + 
                            "-----------");
         System.out.println("Non-preemtive SJF:");
-        NonPreemptiveSJF a1 = new NonPreemptiveSJF();
-        a1.schedule(arrivalTime, burstTime, counter);
+        NonPreemptiveSJF a = new NonPreemptiveSJF();
+        a.schedule(arrivalTime, burstTime, counter);
+
+        System.out.println("\nNon-Preemptive Priority:");
+        NonPreemptivePriority b = new NonPreemptivePriority();
+        b.schedule(arrivalTime, burstTime, priority, counter);
     }
 }
