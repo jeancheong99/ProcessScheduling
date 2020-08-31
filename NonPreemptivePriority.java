@@ -13,6 +13,8 @@ class NonPreemptivePriority {
 
     private int counter = 0;
     private int currTime = 0;
+    private int currArrTime;
+    private int total = 0;
 
     public NonPreemptivePriority() {}
 
@@ -27,13 +29,42 @@ class NonPreemptivePriority {
         while(!(executionList.size() == numProcess)) {     
             //selecting the first process to be executed at time = 0
             if(executionList.size() == 0){
-                executionList.add(arrKeyList.get(0));
-                currTime += burstTime.get(arrKeyList.get(0));
-                timestamp.add(counter, currTime);
-                arrKeyList.remove(0);
-                arrValueList.remove(0);
+                currArrTime = arrValueList.get(0);
+                for(int i=0; i<numProcess-1; i++) {
+                    if(currArrTime == arrValueList.get(i+1)) {
+                        total++;
+                    }
+                }
+                if (total == 0) {
+                    executionList.add(arrKeyList.get(0));
+                    currTime += burstTime.get(arrKeyList.get(0));
+                    timestamp.add(counter, currTime);
+                    arrKeyList.remove(0);
+                    arrValueList.remove(0);
+                    counter++;
+                }
+                else {
+                    String highest = "";
+                    int temp = 0;
+                    for(int i=0; i<total; i++) {
+                        if(priority.get(arrKeyList.get(i)) <= priority.get(arrKeyList.get(i+1))) {
+                            highest = arrKeyList.get(i);
+                            temp = i;
+                        }
+                        else {
+                            highest = arrKeyList.get(i+1);
+                            temp = i;
+                        }
+                    }    
+                    executionList.add(highest);
+                    currTime += burstTime.get(highest);
+                    timestamp.add(counter, currTime);
+                    arrKeyList.remove(highest);
+                    arrValueList.remove(temp);
+                    counter++;
+                }
             }
-            else if(executionList.size() < (numProcess-1) ) {
+            else if(executionList.size() < numProcess-1 ) {
                 // add process that comes while previous process is executing into readyQueue
                 for(int i=0; i < arrKeyList.size(); i++) {
                     if(arrValueList.get(i) <= currTime) {
@@ -43,8 +74,9 @@ class NonPreemptivePriority {
                 //compare and insert process to executionList based on priority
                 if(priority.get(readyQueue.get(0)) <= priority.get(readyQueue.get(1))) {
                     executionList.add(readyQueue.get(0));
-                    timestamp.add(counter, currTime);
                     currTime += burstTime.get(readyQueue.get(0));
+                    timestamp.add(counter, currTime);
+                    //currTime += burstTime.get(readyQueue.get(0));
                     arrKeyList.remove(readyQueue.get(0));
                     arrValueList.remove(0);
                     readyQueue.clear();
@@ -52,8 +84,9 @@ class NonPreemptivePriority {
                 }
                 else {
                     executionList.add(readyQueue.get(1));
-                    timestamp.add(counter, currTime);
                     currTime += burstTime.get(readyQueue.get(1));
+                    timestamp.add(counter, currTime);
+                    //currTime += burstTime.get(readyQueue.get(1));
                     arrKeyList.remove(readyQueue.get(1));
                     arrValueList.remove(1);
                     readyQueue.clear();
@@ -62,13 +95,13 @@ class NonPreemptivePriority {
             }
             else if(executionList.size() == numProcess-1) {
                 executionList.add(arrKeyList.get(arrKeyList.size()-1));
-                timestamp.add(counter, currTime);
                 currTime += burstTime.get(arrKeyList.get(arrKeyList.size()-1));
+                timestamp.add(counter, currTime);
+                //currTime += burstTime.get(arrKeyList.get(arrKeyList.size()-1));
                 arrKeyList.remove(arrKeyList.size()-1);
                 arrValueList.remove(arrValueList.size()-1);
                 counter++;
             }
-            timestamp.add(counter, currTime);
         }
         ganttChart(numProcess);
     }  
