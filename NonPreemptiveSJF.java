@@ -2,27 +2,40 @@ import java.util.*;
 import java.text.DecimalFormat;
 
 class NonPreemptiveSJF{
+    DecimalFormat df = new DecimalFormat("00");
     private LinkedHashMap<String, Integer> sortedArrival;
     private List<Integer> arrValue;
     private Set<String> arrKey;
     private List<String> arrKeyList;
-    private List<String> execProcess = new ArrayList<>();
-    private List<Integer> timestamp = new ArrayList<>();
-    private List<Integer> burstValue = new ArrayList<>();
+    
     private LinkedHashMap<String, Integer> sortedBurst = new LinkedHashMap<>();
     private Set<String> SBKey;
     private List<String> SBKeyList;
 
+    private LinkedHashMap<String, Integer> finishTime = new LinkedHashMap<>();
+    private Set<String> ftKey;
+    private List<String> ftKeyList;
+
+    private LinkedHashMap<String, Integer> turnaroundTime = new LinkedHashMap<>();
+    private LinkedHashMap<String, Integer> waitingTime = new LinkedHashMap<>();
+
+    private List<String> execProcess = new ArrayList<>();
+    private List<Integer> timestamp = new ArrayList<>();
+    private List<Integer> burstValue = new ArrayList<>();
+
+    private int numProcess;
     private int position = 0;
     private int prevPosition;
     private int count = 0;
     private int accumulator = 0;
-    private int currArrTime;
+    private int currArrTime; 
 
-    public NonPreemptiveSJF() {}
+    public NonPreemptiveSJF(int numProcess) {
+        this.numProcess = numProcess;
+    }
 
-    public void schedule(LinkedHashMap<String, Integer> arrivalTime, LinkedHashMap<String, Integer> burstTime, int numProcess){
-        sortedArrival = sortByValue(numProcess, arrivalTime);
+    public void schedule(LinkedHashMap<String, Integer> arrivalTime, LinkedHashMap<String, Integer> burstTime){
+        sortedArrival = sortByValue(arrivalTime);
         arrValue = new ArrayList<>(sortedArrival.values());
         arrKey = sortedArrival.keySet(); 
         arrKeyList = new ArrayList<>(arrKey);
@@ -47,7 +60,7 @@ class NonPreemptiveSJF{
                 for(int k=0; k<=count; k++, prevPosition++) {
                     sortedBurst.put(arrKeyList.get(prevPosition), burstTime.get(arrKeyList.get(prevPosition)));
                 }
-                sortedBurst = sortByValue(count, sortedBurst);
+                sortedBurst = sortByValue(sortedBurst);
                 SBKey = sortedBurst.keySet();
                 SBKeyList = new ArrayList<>(SBKey);
 
@@ -67,10 +80,16 @@ class NonPreemptiveSJF{
         for(int i=0; i<numProcess; i++){
             accumulator += burstValue.get(i);
             timestamp.add(i+1, accumulator);
+            finishTime.put(execProcess.get(i), accumulator);
         }
-        ganttChart(numProcess);
+        ftKey = finishTime.keySet();
+        ftKeyList = new ArrayList<>(ftKey);
+        ganttChart();
+        turnaroundTimeCalc(arrivalTime);
+        waitingTimeCalc(burstTime);
+        printCalcTable(arrivalTime, burstTime);
     }  
-    public LinkedHashMap<String, Integer> sortByValue(int numProcess, LinkedHashMap<String, Integer> temp){
+    public LinkedHashMap<String, Integer> sortByValue(LinkedHashMap<String, Integer> temp){
         List<Map.Entry<String, Integer>> entries = new ArrayList<>(temp.entrySet());
         Collections.sort(entries, new Comparator<Map.Entry<String, Integer>>() {
             @Override
@@ -86,14 +105,54 @@ class NonPreemptiveSJF{
 
         return temp;
     }
-    public void ganttChart(int numProcess){
+    public void ganttChart(){
         for(int i=0; i<numProcess; i++){
             System.out.print("|---" + execProcess.get(i) + "---");
         }
         System.out.println("|");
         for(int i=0; i<=numProcess; i++){
-            System.out.print(new DecimalFormat("00").format(timestamp.get(i)) + "       ");
+            System.out.print(df.format(timestamp.get(i)) + "       ");
         }
         System.out.print("\n");
-    }       
+    } 
+    public void turnaroundTimeCalc(LinkedHashMap<String,Integer> arrivalTime) {
+        // Finish time - Arrival time
+        int finish;
+        int arr;
+        for(int i=0; i < numProcess; i++) {
+            finish = finishTime.get(ftKeyList.get(i));
+            arr = arrivalTime.get(execProcess.get(i));
+            turnaroundTime.put(ftKeyList.get(i), (finish-arr)); 
+        }
+    }
+    public void waitingTimeCalc(LinkedHashMap<String,Integer> burstTime) {
+        // turnaround time - burst time
+        int turnaround;
+        int burst;
+        for(int i=0; i < numProcess; i++) {
+            turnaround = turnaroundTime.get(("P"+i));
+            burst = burstTime.get(("P"+i));
+            waitingTime.put(("P"+i), (turnaround-burst));
+        }
+    }
+    public void printCalcTable(LinkedHashMap<String,Integer> arrivalTime, LinkedHashMap<String,Integer> burstTime) {
+        String key;
+        int totalTurnaround = 0;
+        int totalWaiting = 0;
+        System.out.print("\n");
+        System.out.println("|-----------|--------------|------------|-------------|-----------------|--------------|");
+        System.out.println("|  Process  | Arrival Time | Burst Time | Finish Time | Turnaround Time | Waiting Time |");
+        System.out.println("|-----------|--------------|------------|-------------|-----------------|--------------|");
+        for(int i=0; i < numProcess; i++) {
+            key = "P"+i;
+            System.out.println("|  " + key + "       | " + arrivalTime.get(key) + "            | " + burstTime.get(key) + "          | " +
+                               df.format(finishTime.get(key)) + "          | " + df.format(turnaroundTime.get(key)) + "              | " +
+                               df.format(waitingTime.get(key)) + "           |" );
+            totalTurnaround += turnaroundTime.get(key);
+            totalWaiting += waitingTime.get(key);
+        }
+        System.out.println("|--------------------------------------------------------------------------------------|");
+        System.out.println("Average Turnaround time: " + (totalTurnaround/numProcess));
+        System.out.println("Average Waiting time   : " + (totalWaiting/numProcess));
+    }
 }
