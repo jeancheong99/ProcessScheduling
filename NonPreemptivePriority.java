@@ -11,15 +11,18 @@ class NonPreemptivePriority {
     private List<String> executionList = new ArrayList<>();
     private List<Integer> timestamp = new ArrayList<>();
 
+    private int numProcess;
     private int counter = 0;
     private int currTime = 0;
     private int currArrTime;
     private int total = 0;
 
-    public NonPreemptivePriority() {}
+    public NonPreemptivePriority(int numProcess) {
+        this.numProcess = numProcess;
+    }
 
-    public void schedule(LinkedHashMap<String, Integer> arrivalTime, LinkedHashMap<String, Integer> burstTime, LinkedHashMap<String, Integer> priority, int numProcess){
-        sortedArrival = sortByValue(numProcess, arrivalTime);
+    public void schedule(LinkedHashMap<String, Integer> arrivalTime, LinkedHashMap<String, Integer> burstTime, LinkedHashMap<String, Integer> priority){
+        sortedArrival = sortByValue(arrivalTime);
         arrValueList = new ArrayList<>(sortedArrival.values());
         arrKey = sortedArrival.keySet(); 
         arrKeyList = new ArrayList<>(arrKey);
@@ -103,9 +106,9 @@ class NonPreemptivePriority {
                 counter++;
             }
         }
-        ganttChart(numProcess);
+        ganttChart();
     }  
-    public LinkedHashMap<String, Integer> sortByValue(int numProcess, LinkedHashMap<String, Integer> temp){
+    public LinkedHashMap<String, Integer> sortByValue(LinkedHashMap<String, Integer> temp){
         List<Map.Entry<String, Integer>> entries = new ArrayList<>(temp.entrySet());
         Collections.sort(entries, new Comparator<Map.Entry<String, Integer>>() {
             @Override
@@ -121,7 +124,7 @@ class NonPreemptivePriority {
 
         return temp;
     }
-    public void ganttChart(int numProcess){
+    public void ganttChart(){
         for(int i=0; i<numProcess; i++){
             System.out.print("|---" + executionList.get(i) + "---");
         }
