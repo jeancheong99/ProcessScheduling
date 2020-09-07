@@ -26,39 +26,85 @@ class PreemptiveSJF{
         while(currentTime < processTime){
             //if still have process haven't entered
             if((!arrivalKeyList.isEmpty()) && currentTime == arrivalValueList.get(0)){
-                //first process go in
+                //first entry in
                 if(currentProcess == null){
-                    currentProcess = arrivalKeyList.get(0);
-                    executionList.add(currentProcess);
-                    timestamp.add(currentTime);
-                    arrivalValueList.remove(0);
-                    arrivalKeyList.remove(0);
+                    //check duplicate value
+                    if(Collections.frequency(arrivalValueList, arrivalValueList.get(0)) <= 1){
+                        currentProcess = arrivalKeyList.get(0);
+                        executionList.add(currentProcess);
+                        timestamp.add(currentTime);
+                        arrivalValueList.remove(0);
+                        arrivalKeyList.remove(0);
+                    }
+                    else{
+                        int value = arrivalValueList.get(0);
+                        List<Integer> temp = new ArrayList<>(arrivalValueList);
+                        for(int i = 0; i < Collections.frequency(temp, value); i++){
+                            readyQueue.add(arrivalKeyList.get(0));
+                            arrivalKeyList.remove(0);
+                            arrivalValueList.remove(0);
+                        }
+                        currentProcess = getMin(burstTime, readyQueue);
+                        executionList.add(currentProcess);
+                        timestamp.add(currentTime);
+                        readyQueue.remove(currentProcess);
+                        System.out.println(readyQueue);
+                    }
                     burstTime.put(currentProcess, burstTime.get(currentProcess) - 1);
                     currentTime++;
                     continue;
                 }
-                
-                //if burst time of new entry process is shorter than old process
-                if(burstTime.get(arrivalKeyList.get(0)) < burstTime.get(currentProcess)){
-                    readyQueue.add(currentProcess);
-                    currentProcess = arrivalKeyList.get(0);
-                    executionList.add(currentProcess);
-                    timestamp.add(currentTime);
+
+                if(Collections.frequency(arrivalValueList, arrivalValueList.get(0)) <= 1){
+                    //if burst time of new entry is shorter than old entry
+                    if(burstTime.get(arrivalKeyList.get(0)) < burstTime.get(currentProcess)){
+                        readyQueue.add(currentProcess);
+                        currentProcess = arrivalKeyList.get(0);
+                        executionList.add(currentProcess);
+                        timestamp.add(currentTime);
+                    }
+                    else{
+                        readyQueue.add(arrivalKeyList.get(0));
+                    }
+                    //if current process finish running
+                    if(burstTime.get(currentProcess) == 0){
+                        burstTime.remove(currentProcess);
+                        currentProcess = getMin(burstTime, readyQueue);
+                        executionList.add(currentProcess);
+                        timestamp.add(currentTime);
+                        readyQueue.remove(currentProcess);
+                    }
+                    burstTime.put(currentProcess, burstTime.get(currentProcess) - 1);
+                    arrivalValueList.remove(0);
+                    arrivalKeyList.remove(0);
                 }
                 else{
-                    readyQueue.add(arrivalKeyList.get(0));
+                    int value = arrivalValueList.get(0);
+                    List<Integer> temp = new ArrayList<>(arrivalValueList);
+                    for(int i = 0; i < Collections.frequency(temp, value); i++){
+                        readyQueue.add(arrivalKeyList.get(0));
+                        arrivalKeyList.remove(0);
+                        arrivalValueList.remove(0);
+                    }
+                    String tempKey = getMin(burstTime, readyQueue);
+                    //if burst time of new entry is shorter than old entry
+                    if(burstTime.get(tempKey) < burstTime.get(currentProcess)){
+                        readyQueue.add(currentProcess);
+                        currentProcess = tempKey;
+                        executionList.add(currentProcess);
+                        timestamp.add(currentTime);
+                        readyQueue.remove(currentProcess);
+                    }
+                    //if current process finish running
+                    if(burstTime.get(currentProcess) == 0){
+                        burstTime.remove(currentProcess);
+                        currentProcess = getMin(burstTime, readyQueue);
+                        executionList.add(currentProcess);
+                        timestamp.add(currentTime);
+                        readyQueue.remove(currentProcess);
+                    }
+                    burstTime.put(currentProcess, burstTime.get(currentProcess) - 1);
                 }
-                //if current process finish running
-                if(burstTime.get(currentProcess) == 0){
-                    burstTime.remove(currentProcess);
-                    currentProcess = getMin(burstTime, readyQueue);
-                    executionList.add(currentProcess);
-                    timestamp.add(currentTime);
-                    readyQueue.remove(currentProcess);
-                }
-                burstTime.put(currentProcess, burstTime.get(currentProcess) - 1);
-                arrivalValueList.remove(0);
-                arrivalKeyList.remove(0);
             }
             //if all process have entered
             else{
@@ -78,7 +124,7 @@ class PreemptiveSJF{
         timestamp.add(processTime);
         ganttChart(executionList.size());
     }
-    
+
     public String getMin(LinkedHashMap<String, Integer> burstTime, List<String> readyQueue){
         List<Integer> temp = new ArrayList<>();
         String min;
@@ -94,6 +140,7 @@ class PreemptiveSJF{
         for(int i = 0; i < sumBurstTime.size(); i++){
             processTime = processTime + sumBurstTime.get(i);
         }
+        processTime = processTime + arrivalValueList.get(0);
     }
 
     public void sort(LinkedHashMap<String, Integer> arrivalTime){
