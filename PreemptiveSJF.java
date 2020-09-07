@@ -26,7 +26,7 @@ class PreemptiveSJF{
         while(currentTime < processTime){
             //if still have process haven't entered
             if((!arrivalKeyList.isEmpty()) && currentTime == arrivalValueList.get(0)){
-                //first entry in
+                //first process go in
                 if(currentProcess == null){
                     //check duplicate value
                     if(Collections.frequency(arrivalValueList, arrivalValueList.get(0)) <= 1){
