@@ -37,23 +37,30 @@ public class ProcessScheduling {
             counter++;
         }
         */                     
-        System.out.println("|-----------|--------------|------------|----------|");
-        System.out.println("|  Process  | Arrival Time | Burst Time | Priority |");
-        System.out.println("|-----------|--------------|------------|----------|");
+        System.out.println("      |-----------|--------------|------------|----------|");
+        System.out.println("      |  Process  | Arrival Time | Burst Time | Priority |");
+        System.out.println("      |-----------|--------------|------------|----------|");
         for(int i = 0; i < counter; i++){
-        System.out.println("|  P" + i + "       | " + arrivalTime.get("P"+i) + "            | " + burstTime.get("P"+i) + "          | " +
+        System.out.println("      |  P" + i + "       | " + arrivalTime.get("P"+i) + "            | " + burstTime.get("P"+i) + "          | " +
                             priority.get("P"+i) + "        |");
         }
-        System.out.println("|--------------------------------------------------|\n\n");
+        System.out.println("      |--------------------------------------------------|");
         
-        System.out.println("Gantt Chart\n" + 
-                           "-----------");
-        System.out.println("Non-preemtive SJF:");
+        System.out.println("----------------------------------------------------------------------------------------" +
+                           "\n                                Simulation Results                                    " + 
+                           "\n----------------------------------------------------------------------------------------");
+        System.out.println("\nNon-preemtive SJF:");
         NonPreemptiveSJF a = new NonPreemptiveSJF(counter);
         a.schedule(arrivalTime, burstTime);
-
+        System.out.print("\n****************************************************************************************\n");
         System.out.println("\nNon-Preemptive Priority:");
         NonPreemptivePriority b = new NonPreemptivePriority(counter);
         b.schedule(arrivalTime, burstTime, priority);
+        System.out.print("\n****************************************************************************************\n");
+
+        System.out.println("\nPreemptive SJF:");
+        PreemptiveSJF c = new PreemptiveSJF();
+        c.schedule(arrivalTime, burstTime);
+
     }
 }
