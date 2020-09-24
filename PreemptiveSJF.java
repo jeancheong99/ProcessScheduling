@@ -2,25 +2,38 @@ import java.util.*;
 import java.text.DecimalFormat;
 
 class PreemptiveSJF{
+    DecimalFormat df = new DecimalFormat("00");
+
     private LinkedHashMap<String, Integer> sortedArrival;
     private List<Integer> arrivalValueList;
     private Set<String> arrivalKey;
     private List<String> arrivalKeyList;
 
+    private LinkedHashMap<String, Integer> finishTime = new LinkedHashMap<>();
+    private Set<String> ftKey;
+    private List<String> ftKeyList;
+
+    private LinkedHashMap<String, Integer> clonedBurst ;
+    private LinkedHashMap<String, Integer> turnaroundTime = new LinkedHashMap<>();
+    private LinkedHashMap<String, Integer> waitingTime = new LinkedHashMap<>();
+
     private List<String> readyQueue = new ArrayList<>();
     private List<String> executionList = new ArrayList<>();
     private List<Integer> timestamp = new ArrayList<>();
 
+    private int numProcess;
     private int currentTime = 0;
     private int processTime = 0;
     private String currentProcess;
 
-    public PreemptiveSJF(){
+    public PreemptiveSJF(int numProcess){
+        this.numProcess = numProcess;
         System.out.println("Tested by Aw");
     }
 
     public void schedule(LinkedHashMap<String, Integer> arrivalTime, LinkedHashMap<String, Integer> burstTime) {
         sort(arrivalTime);
+        cloneBurstTimeMap(burstTime);
         calculateProcessTime(burstTime);
 
         while(currentTime < processTime){
@@ -46,7 +59,7 @@ class PreemptiveSJF{
                         }
                         currentProcess = getMin(burstTime, readyQueue);
                         executionList.add(currentProcess);
-                        timestamp.add(currentTime);
+                        timestamp.add(currentTime); 
                         readyQueue.remove(currentProcess);
                         System.out.println(readyQueue);
                     }
@@ -62,16 +75,19 @@ class PreemptiveSJF{
                         currentProcess = arrivalKeyList.get(0);
                         executionList.add(currentProcess);
                         timestamp.add(currentTime);
+                        finishTime.put(currentProcess, currentTime);
                     }
                     else{
                         readyQueue.add(arrivalKeyList.get(0));
                     }
                     //if current process finish running
                     if(burstTime.get(currentProcess) == 0){
+                        finishTime.put(currentProcess, currentTime);
                         burstTime.remove(currentProcess);
                         currentProcess = getMin(burstTime, readyQueue);
                         executionList.add(currentProcess);
                         timestamp.add(currentTime);
+                        
                         readyQueue.remove(currentProcess);
                     }
                     burstTime.put(currentProcess, burstTime.get(currentProcess) - 1);
@@ -110,6 +126,7 @@ class PreemptiveSJF{
             else{
                 if(currentProcess != null){
                     if(burstTime.get(currentProcess) == 0){
+                        finishTime.put(currentProcess, currentTime);
                         burstTime.remove(currentProcess);
                         currentProcess = getMin(burstTime, readyQueue);
                         executionList.add(currentProcess);
@@ -119,10 +136,21 @@ class PreemptiveSJF{
                     burstTime.put(currentProcess, burstTime.get(currentProcess) - 1);
                 }
             }
-            currentTime++;
+            currentTime++; 
         }
         timestamp.add(processTime);
+        finishTime.put(currentProcess, processTime);
+        ftKey = finishTime.keySet();
+        ftKeyList = new ArrayList<>(ftKey);
+        System.out.println("exec-\n"+executionList.toString());        
         ganttChart(executionList.size());
+        turnaroundTimeCalc(arrivalTime);
+        waitingTimeCalc();
+        printCalcTable(arrivalTime, burstTime);
+    }
+
+    public void cloneBurstTimeMap(LinkedHashMap<String, Integer> temp){
+        clonedBurst = new LinkedHashMap<>(temp); 
     }
 
     public String getMin(LinkedHashMap<String, Integer> burstTime, List<String> readyQueue){
@@ -141,6 +169,28 @@ class PreemptiveSJF{
             processTime = processTime + sumBurstTime.get(i);
         }
         processTime = processTime + arrivalValueList.get(0);
+    }
+
+    public void turnaroundTimeCalc(LinkedHashMap<String,Integer> arrivalTime) {
+        // Finish time - Arrival time
+        int finish;
+        int arr;
+        for(int i=0; i < numProcess; i++) {
+            finish = finishTime.get(ftKeyList.get(i));
+            arr = arrivalTime.get(ftKeyList.get(i));
+            turnaroundTime.put(ftKeyList.get(i), (finish-arr)); 
+        }
+    }
+
+    public void waitingTimeCalc() {
+        // turnaround time - burst time
+        int turnaround;
+        int burst;
+        for(int i=0; i < numProcess; i++) {
+            turnaround = turnaroundTime.get(("P"+i));
+            burst = clonedBurst.get(("P"+i));
+            waitingTime.put(("P"+i), (turnaround-burst));
+        }
     }
 
     public void sort(LinkedHashMap<String, Integer> arrivalTime){
@@ -173,8 +223,30 @@ class PreemptiveSJF{
         }
         System.out.println("|");
         for(int i=0; i<=numProcess; i++){
-            System.out.print(new DecimalFormat("00").format(timestamp.get(i)) + "       ");
+            System.out.print(df.format(timestamp.get(i)) + "       ");
         }
         System.out.print("\n");
-    }       
+    }
+    
+    public void printCalcTable(LinkedHashMap<String,Integer> arrivalTime, LinkedHashMap<String,Integer> burstTime) {
+        String key;
+        int totalTurnaround = 0;
+        int totalWaiting = 0;
+        System.out.print("\n");
+        System.out.println("|-----------|--------------|------------|-------------|-----------------|--------------|");
+        System.out.println("|  Process  | Arrival Time | Burst Time | Finish Time | Turnaround Time | Waiting Time |");
+        System.out.println("|-----------|--------------|------------|-------------|-----------------|--------------|");
+        for(int i=0; i < numProcess; i++) {
+            key = "P"+i;
+            System.out.println("|  " + key + "       | " + arrivalTime.get(key) + "            | " + clonedBurst.get(key) + "          | " +
+                               df.format(finishTime.get(key)) + "          | " + df.format(turnaroundTime.get(key)) + "              | " +
+                               df.format(waitingTime.get(key)) + "           |" );
+            totalTurnaround += turnaroundTime.get(key);
+            totalWaiting += waitingTime.get(key);
+        }
+        System.out.println("|--------------------------------------------------------------------------------------|");
+        System.out.println("Average Turnaround time: " + (totalTurnaround/numProcess));
+        System.out.println("Average Waiting time   : " + (totalWaiting/numProcess));
+    }
+
 }
