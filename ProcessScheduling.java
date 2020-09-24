@@ -1,8 +1,11 @@
+import java.text.DecimalFormat;
 import java.util.*;
+import java.text.DecimalFormat;
 
 public class ProcessScheduling {
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
+        DecimalFormat df = new DecimalFormat("00");
         LinkedHashMap<String, Integer> arrivalTime = new LinkedHashMap<>();
         LinkedHashMap<String, Integer> burstTime = new LinkedHashMap<>();
         LinkedHashMap<String, Integer> priority = new LinkedHashMap<>();
@@ -13,12 +16,12 @@ public class ProcessScheduling {
         System.out.print(" Welcome to Process Scheduling Simulator\n");
         System.out.print("* * * * * * * * * * * * * * * * * * * * *\n\n");
 
-        arrivalTime.put("P0", 0); arrivalTime.put("P1", 1);arrivalTime.put("P2", 5);arrivalTime.put("P3", 6);arrivalTime.put("P4", 7);arrivalTime.put("P5", 8);
-        burstTime.put("P0",6);burstTime.put("P1",4);burstTime.put("P2",6);burstTime.put("P3",6);burstTime.put("P4",6);burstTime.put("P5",6);
-        priority.put("P0",3);priority.put("P1",3);priority.put("P2",1);priority.put("P3",1);priority.put("P4",5);priority.put("P5",6);
-        counter=6;
+        // arrivalTime.put("P0", 0); arrivalTime.put("P1", 1);arrivalTime.put("P2", 5);arrivalTime.put("P3", 6);arrivalTime.put("P4", 7);arrivalTime.put("P5", 8);
+        // burstTime.put("P0",6);burstTime.put("P1",4);burstTime.put("P2",6);burstTime.put("P3",6);burstTime.put("P4",6);burstTime.put("P5",6);
+        // priority.put("P0",3);priority.put("P1",3);priority.put("P2",1);priority.put("P3",1);priority.put("P4",5);priority.put("P5",6);
+        // counter=6;
 
-        /*
+        
         while(run == true){
             System.out.print("Enter arrival time for Process " + counter + ": ");
             arrivalTime.put(("P"+counter), in.nextInt());
@@ -36,15 +39,17 @@ public class ProcessScheduling {
             System.out.print("\n");
             counter++;
         }
-        */                     
-        System.out.println("      |-----------|--------------|------------|----------|");
-        System.out.println("      |  Process  | Arrival Time | Burst Time | Priority |");
-        System.out.println("      |-----------|--------------|------------|----------|");
+                            
+        System.out.println("      |-----------|---------------|-------------|-----------|");
+        System.out.println("      |  Process  |  Arrival Time |  Burst Time |  Priority |");
+        System.out.println("      |-----------|---------------|-------------|-----------|");
         for(int i = 0; i < counter; i++){
-        System.out.println("      |  P" + i + "       | " + arrivalTime.get("P"+i) + "            | " + burstTime.get("P"+i) + "          | " +
-                            priority.get("P"+i) + "        |");
+        System.out.println("      |  P" + i + "       | " + 
+                            df.format(arrivalTime.get("P"+i)) + "            | " + 
+                            df.format(burstTime.get("P"+i)) + "          | " +
+                            df.format(priority.get("P"+i)) + "        |");
         }
-        System.out.println("      |--------------------------------------------------|");
+        System.out.println("      |-----------------------------------------------------|");
         
         System.out.println("----------------------------------------------------------------------------------------" +
                            "\n                                Simulation Results                                    " + 
@@ -59,7 +64,7 @@ public class ProcessScheduling {
         System.out.print("\n****************************************************************************************\n");
 
         System.out.println("\nPreemptive SJF:");
-        PreemptiveSJF c = new PreemptiveSJF();
+        PreemptiveSJF c = new PreemptiveSJF(counter);
         c.schedule(arrivalTime, burstTime);
 
     }
