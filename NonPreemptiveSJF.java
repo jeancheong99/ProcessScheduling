@@ -3,6 +3,7 @@ import java.text.DecimalFormat;
 
 class NonPreemptiveSJF{
     DecimalFormat df = new DecimalFormat("00");
+
     private LinkedHashMap<String, Integer> sortedArrival;
     private List<Integer> arrValue;
     private Set<String> arrKey;
@@ -19,7 +20,7 @@ class NonPreemptiveSJF{
     private LinkedHashMap<String, Integer> turnaroundTime = new LinkedHashMap<>();
     private LinkedHashMap<String, Integer> waitingTime = new LinkedHashMap<>();
 
-    private List<String> execProcess = new ArrayList<>();
+    private List<String> executionList = new ArrayList<>();
     private List<Integer> timestamp = new ArrayList<>();
     private List<Integer> burstValue = new ArrayList<>();
 
@@ -40,7 +41,7 @@ class NonPreemptiveSJF{
         arrKey = sortedArrival.keySet(); 
         arrKeyList = new ArrayList<>(arrKey);
         
-        while(!(execProcess.size() == numProcess)) {
+        while(executionList.size() != numProcess) {
             currArrTime = arrValue.get(position);
             prevPosition = position;
             for(int i=position; i<numProcess-1; i++) {
@@ -54,7 +55,7 @@ class NonPreemptiveSJF{
                 }     
             }
             if(count == 0) {
-                execProcess.add(arrKeyList.get(prevPosition));               
+                executionList.add(arrKeyList.get(prevPosition));               
             }
             else{
                 for(int k=0; k<=count; k++, prevPosition++) {
@@ -65,7 +66,7 @@ class NonPreemptiveSJF{
                 SBKeyList = new ArrayList<>(SBKey);
 
                 for(int m=0; m<SBKeyList.size(); m++) {
-                    execProcess.add(SBKeyList.get(m));
+                    executionList.add(SBKeyList.get(m));
                 }                
             }
             count = 0; 
@@ -73,14 +74,14 @@ class NonPreemptiveSJF{
         }
 
         for(int i=0; i<numProcess; i++) {
-            int temp = burstTime.get(execProcess.get(i));
+            int temp = burstTime.get(executionList.get(i));
             burstValue.add(i,temp);
         }
         timestamp.add(0,0);
         for(int i=0; i<numProcess; i++){
             accumulator += burstValue.get(i);
             timestamp.add(i+1, accumulator);
-            finishTime.put(execProcess.get(i), accumulator);
+            finishTime.put(executionList.get(i), accumulator);
         }
         ftKey = finishTime.keySet();
         ftKeyList = new ArrayList<>(ftKey);
@@ -89,6 +90,7 @@ class NonPreemptiveSJF{
         waitingTimeCalc(burstTime);
         printCalcTable(arrivalTime, burstTime);
     }  
+
     public LinkedHashMap<String, Integer> sortByValue(LinkedHashMap<String, Integer> temp){
         List<Map.Entry<String, Integer>> entries = new ArrayList<>(temp.entrySet());
         Collections.sort(entries, new Comparator<Map.Entry<String, Integer>>() {
@@ -105,9 +107,10 @@ class NonPreemptiveSJF{
 
         return temp;
     }
+
     public void ganttChart(){
         for(int i=0; i<numProcess; i++){
-            System.out.print("|---" + execProcess.get(i) + "---");
+            System.out.print("|---" + executionList.get(i) + "---");
         }
         System.out.println("|");
         for(int i=0; i<=numProcess; i++){
@@ -115,16 +118,18 @@ class NonPreemptiveSJF{
         }
         System.out.print("\n");
     } 
+
     public void turnaroundTimeCalc(LinkedHashMap<String,Integer> arrivalTime) {
         // Finish time - Arrival time
         int finish;
         int arr;
         for(int i=0; i < numProcess; i++) {
             finish = finishTime.get(ftKeyList.get(i));
-            arr = arrivalTime.get(execProcess.get(i));
+            arr = arrivalTime.get(executionList.get(i));
             turnaroundTime.put(ftKeyList.get(i), (finish-arr)); 
         }
     }
+
     public void waitingTimeCalc(LinkedHashMap<String,Integer> burstTime) {
         // turnaround time - burst time
         int turnaround;
@@ -135,6 +140,7 @@ class NonPreemptiveSJF{
             waitingTime.put(("P"+i), (turnaround-burst));
         }
     }
+    
     public void printCalcTable(LinkedHashMap<String,Integer> arrivalTime, LinkedHashMap<String,Integer> burstTime) {
         String key;
         int totalTurnaround = 0;
