@@ -61,7 +61,6 @@ class PreemptiveSJF{
                         executionList.add(currentProcess);
                         timestamp.add(currentTime); 
                         readyQueue.remove(currentProcess);
-                        System.out.println(readyQueue);
                     }
                     burstTime.put(currentProcess, burstTime.get(currentProcess) - 1);
                     currentTime++;
