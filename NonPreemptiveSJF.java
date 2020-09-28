@@ -162,25 +162,13 @@ class NonPreemptiveSJF{
     }
 
     public String getShortestJob(){
-        String shortest;
-        int time = sortedArrival.get(readyQueue.get(0));
-        int numOfSameArrival = getNumberOfSameArrival(time);
-
-        if(numOfSameArrival == 1){
-            return readyQueue.get(0);
+        List<Integer> temp = new ArrayList<>();
+        String min;
+        for(int i = 0; i < readyQueue.size(); i++){
+            temp.add(burstTime.get(readyQueue.get(i)));
         }
-        else{
-            int temp = burstTime.get(readyQueue.get(0));
-            shortest = readyQueue.get(0);
-
-            for(int i = 0; i < numOfSameArrival - 1; i++){
-                if(burstTime.get(readyQueue.get(i+1)) < temp){
-                    temp = burstTime.get(readyQueue.get(i+1));
-                    shortest = readyQueue.get(i+1);
-                }
-            }
-            return shortest;
-        }
+        min = readyQueue.get(temp.indexOf(Collections.min(temp)));
+        return min;
     }
 
     public int getNumberOfSameArrival(int time){
