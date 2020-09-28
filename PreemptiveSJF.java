@@ -140,9 +140,6 @@ class PreemptiveSJF{
         }
         timestamp.add(processTime);
         finishTime.put(currentProcess, processTime);
-        ftKey = finishTime.keySet();
-        ftKeyList = new ArrayList<>(ftKey);
-        System.out.println("exec-\n"+executionList.toString());        
         ganttChart(executionList.size());
         turnaroundTimeCalc(arrivalTime);
         waitingTimeCalc();
@@ -173,12 +170,14 @@ class PreemptiveSJF{
 
     public void turnaroundTimeCalc(LinkedHashMap<String,Integer> arrivalTime) {
         // Finish time - Arrival time
+        ftKey = finishTime.keySet();
+        ftKeyList = new ArrayList<>(ftKey);
         int finish;
         int arr;
-        for(int i=0; i < numProcess; i++) {
+        for(int i = 0; i < numProcess; i++) {
             finish = finishTime.get(ftKeyList.get(i));
             arr = arrivalTime.get(ftKeyList.get(i));
-            turnaroundTime.put(ftKeyList.get(i), (finish-arr)); 
+            turnaroundTime.put(ftKeyList.get(i), (finish - arr)); 
         }
     }
 
@@ -186,10 +185,12 @@ class PreemptiveSJF{
         // turnaround time - burst time
         int turnaround;
         int burst;
-        for(int i=0; i < numProcess; i++) {
-            turnaround = turnaroundTime.get(("P"+i));
-            burst = clonedBurst.get(("P"+i));
-            waitingTime.put(("P"+i), (turnaround-burst));
+        String process;
+        for(int i = 0; i < numProcess; i++) {
+            process = "P" + i;
+            turnaround = turnaroundTime.get(process);
+            burst = clonedBurst.get(process);
+            waitingTime.put(process, (turnaround - burst));
         }
     }
 
@@ -213,40 +214,41 @@ class PreemptiveSJF{
         for(Map.Entry<String, Integer> e : entries){
             temp.put(e.getKey(), e.getValue());
         }
-
         return temp;
     }
 
     public void ganttChart(int numProcess){
-        for(int i=0; i<numProcess; i++){
+        for(int i = 0; i < numProcess; i++){
             System.out.print("|---" + executionList.get(i) + "---");
         }
         System.out.println("|");
-        for(int i=0; i<=numProcess; i++){
+
+        for(int i = 0; i <= numProcess; i++){
             System.out.print(df.format(timestamp.get(i)) + "       ");
         }
         System.out.print("\n");
     }
     
     public void printCalcTable(LinkedHashMap<String,Integer> arrivalTime, LinkedHashMap<String,Integer> burstTime) {
-        String key;
         int totalTurnaround = 0;
         int totalWaiting = 0;
+        String process;
         System.out.print("\n");
         System.out.println("|-----------|--------------|------------|-------------|-----------------|--------------|");
         System.out.println("|  Process  | Arrival Time | Burst Time | Finish Time | Turnaround Time | Waiting Time |");
         System.out.println("|-----------|--------------|------------|-------------|-----------------|--------------|");
-        for(int i=0; i < numProcess; i++) {
-            key = "P"+i;
-            System.out.println("|  " + key + "       | " + arrivalTime.get(key) + "            | " + clonedBurst.get(key) + "          | " +
-                               df.format(finishTime.get(key)) + "          | " + df.format(turnaroundTime.get(key)) + "              | " +
-                               df.format(waitingTime.get(key)) + "           |" );
-            totalTurnaround += turnaroundTime.get(key);
-            totalWaiting += waitingTime.get(key);
+
+        for(int i = 0; i < numProcess; i++) {
+            process = "P" + i;
+            System.out.println("|  " + process + "       | " + arrivalTime.get(process) + "            | " + clonedBurst.get(process) + "          | " +
+                               df.format(finishTime.get(process)) + "          | " + df.format(turnaroundTime.get(process)) + "              | " +
+                               df.format(waitingTime.get(process)) + "           |" );
+            totalTurnaround += turnaroundTime.get(process);
+            totalWaiting += waitingTime.get(process);
         }
         System.out.println("|--------------------------------------------------------------------------------------|");
-        System.out.println("Average Turnaround time: " + (totalTurnaround/numProcess));
-        System.out.println("Average Waiting time   : " + (totalWaiting/numProcess));
+        System.out.println("Average Turnaround time: " + (totalTurnaround / numProcess));
+        System.out.println("Average Waiting time   : " + (totalWaiting / numProcess));
     }
 
 }
