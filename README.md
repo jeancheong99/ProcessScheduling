@@ -1,5 +1,8 @@
 # ProcessScheduling
-This is a simulation of CPU scheduling algorithms.
+This is a simulation of some CPU scheduling algorithms:
+* Non-Preemptive Shortest Job First
+* Non-Preemptive Priority
+* Preemptive Shortest Job First
 
 ## How To Run?
 1. Download files from this repository.
