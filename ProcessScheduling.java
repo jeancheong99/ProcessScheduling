@@ -60,8 +60,8 @@ public class ProcessScheduling {
         a.schedule(arrivalTime);
         System.out.print("\n****************************************************************************************\n");
         System.out.println("\nNon-Preemptive Priority:");
-        NonPreemptivePriority b = new NonPreemptivePriority(numProcess);
-        b.schedule(arrivalTime, burstTime, priority);
+        NonPreemptivePriority b = new NonPreemptivePriority(numProcess, burstTime);
+        b.schedule(arrivalTime, priority);
         System.out.print("\n****************************************************************************************\n");
 
         System.out.println("\nPreemptive SJF:");
