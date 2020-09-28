@@ -16,10 +16,6 @@ public class ProcessScheduling {
         System.out.print(" Welcome to Process Scheduling Simulator\n");
         System.out.print("* * * * * * * * * * * * * * * * * * * * *\n\n");
 
-        // arrivalTime.put("P0", 0); arrivalTime.put("P1", 1);arrivalTime.put("P2", 5);arrivalTime.put("P3", 6);arrivalTime.put("P4", 7);arrivalTime.put("P5", 8);
-        // burstTime.put("P0",6);burstTime.put("P1",4);burstTime.put("P2",6);burstTime.put("P3",6);burstTime.put("P4",6);burstTime.put("P5",6);
-        // priority.put("P0",3);priority.put("P1",3);priority.put("P2",1);priority.put("P3",1);priority.put("P4",5);priority.put("P5",6);
-        // numProcess=6;
         while(true){
             System.out.println("Enter the number of process(s) to schedule : ");
             numProcess = in.nextInt();
