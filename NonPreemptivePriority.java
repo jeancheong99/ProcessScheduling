@@ -241,8 +241,10 @@ class NonPreemptivePriority{
             totalWaiting += waitingTime.get(process);
         }
         System.out.println("|--------------------------------------------------------------------------------------|");
-        System.out.println("Average Turnaround time: " + (totalTurnaround/numProcess));
-        System.out.println("Average Waiting time   : " + (totalWaiting/numProcess));
+        System.out.println("Total Turnaround Time  : " + totalTurnaround);
+        System.out.println("Average Turnaround Time: " + (totalTurnaround/numProcess));
+        System.out.println("\nTotal Waiting Time   : " + totalWaiting);
+        System.out.println("Average Waiting Time   : " + (totalWaiting/numProcess));
     }
 
 
