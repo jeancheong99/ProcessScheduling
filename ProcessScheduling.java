@@ -56,8 +56,8 @@ public class ProcessScheduling {
                            "\n                                Simulation Results                                    " + 
                            "\n----------------------------------------------------------------------------------------");
         System.out.println("\nNon-preemtive SJF:");
-        NonPreemptiveSJF a = new NonPreemptiveSJF(numProcess);
-        a.schedule(arrivalTime, burstTime);
+        NonPreemptiveSJF a = new NonPreemptiveSJF(numProcess, burstTime);
+        a.schedule(arrivalTime);
         System.out.print("\n****************************************************************************************\n");
         System.out.println("\nNon-Preemptive Priority:");
         NonPreemptivePriority b = new NonPreemptivePriority(numProcess);
