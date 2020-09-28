@@ -28,7 +28,6 @@ class PreemptiveSJF{
 
     public PreemptiveSJF(int numProcess){
         this.numProcess = numProcess;
-        System.out.println("Tested by Aw");
     }
 
     public void schedule(LinkedHashMap<String, Integer> arrivalTime, LinkedHashMap<String, Integer> burstTime) {
