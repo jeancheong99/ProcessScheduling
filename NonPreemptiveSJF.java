@@ -2,94 +2,141 @@ import java.util.*;
 import java.text.DecimalFormat;
 
 class NonPreemptiveSJF{
-    DecimalFormat df = new DecimalFormat("00");
+    private DecimalFormat df = new DecimalFormat("00");
 
     private LinkedHashMap<String, Integer> sortedArrival;
-    private List<Integer> arrValue;
-    private Set<String> arrKey;
-    private List<String> arrKeyList;
-    
-    private LinkedHashMap<String, Integer> sortedBurst = new LinkedHashMap<>();
-    private Set<String> SBKey;
-    private List<String> SBKeyList;
-
-    private LinkedHashMap<String, Integer> finishTime = new LinkedHashMap<>();
-    private Set<String> ftKey;
-    private List<String> ftKeyList;
-
+    private LinkedHashMap<String, Integer> burstTime;
+    private LinkedHashMap<String, Integer> burstTimeClone;
     private LinkedHashMap<String, Integer> turnaroundTime = new LinkedHashMap<>();
     private LinkedHashMap<String, Integer> waitingTime = new LinkedHashMap<>();
+    private LinkedHashMap<String, Integer> finishTime = new LinkedHashMap<>();
+    
+    private Set<String> arrivalKey;
+    private Set<String> ftKey;
 
+    private List<String> arrivalKeyList;
+    private List<Integer> arrivalValueList;
+    private List<String> ftKeyList;
+    private List<String> readyQueue = new ArrayList<>();
     private List<String> executionList = new ArrayList<>();
     private List<Integer> timestamp = new ArrayList<>();
-    private List<Integer> burstValue = new ArrayList<>();
-
+    
+    
     private int numProcess;
-    private int position = 0;
-    private int prevPosition;
-    private int count = 0;
-    private int accumulator = 0;
-    private int currArrTime; 
+    private int currentTime = 0;
+    private int processTime = 0;
+    
+    private String currentProcess;
 
-    public NonPreemptiveSJF(int numProcess) {
+    public NonPreemptiveSJF(int numProcess, LinkedHashMap<String, Integer> burstTime){
         this.numProcess = numProcess;
+        cloneBurstTimeMap(burstTime);
     }
 
-    public void schedule(LinkedHashMap<String, Integer> arrivalTime, LinkedHashMap<String, Integer> burstTime){
-        sortedArrival = sortByValue(arrivalTime);
-        arrValue = new ArrayList<>(sortedArrival.values());
-        arrKey = sortedArrival.keySet(); 
-        arrKeyList = new ArrayList<>(arrKey);
-        
-        while(executionList.size() != numProcess) {
-            currArrTime = arrValue.get(position);
-            prevPosition = position;
-            for(int i=position; i<numProcess-1; i++) {
-                if(currArrTime == arrValue.get(i+1)) {
-                    count++;
-                    position = i+1;
+    public void schedule(LinkedHashMap<String, Integer> arrivalTime){
+        sortArrivalTime(arrivalTime);
+        cloneBurstTimeMap(burstTime);
+        calculateTotalProcessTime();
+
+        while(currentTime < processTime) {
+            // if still have process haven't entered
+            if((!arrivalKeyList.isEmpty()) && currentTime == arrivalValueList.get(0)) {
+                // first process go in
+                if(currentProcess == null){
+                    // check process with same arrival time
+                    if(Collections.frequency(arrivalValueList, arrivalValueList.get(0)) == 1) {
+                        currentProcess = arrivalKeyList.get(0);
+                        executionList.add(currentProcess);
+                        timestamp.add(currentTime);
+                        arrivalKeyList.remove(0);
+                        arrivalValueList.remove(0);
+                    } 
+                    else{
+                        int value = arrivalValueList.get(0);
+                        List<Integer> temp = new ArrayList<>(arrivalValueList);
+                        for(int i = 0; i < Collections.frequency(temp, value); i++) {
+                            readyQueue.add(arrivalKeyList.get(0));
+                            arrivalKeyList.remove(0);
+                            arrivalValueList.remove(0);
+                        }
+                        currentProcess = getShortestJob();
+                        executionList.add(currentProcess);
+                        timestamp.add(currentTime);
+                        readyQueue.remove(currentProcess);
+                    }
+                    burstTime.put(currentProcess, burstTime.get(currentProcess) - 1);
+                    currentTime++;
+                    continue;
+                }
+
+                // check process with same arrival time                                    
+                if(Collections.frequency(arrivalValueList, arrivalValueList.get(0)) == 1){
+                    readyQueue.add(arrivalKeyList.get(0));
+                    arrivalKeyList.remove(0);
+                    arrivalValueList.remove(0);
                 }
                 else{
-                    position++;
-                    break;
-                }     
-            }
-            if(count == 0) {
-                executionList.add(arrKeyList.get(prevPosition));               
+                    int value = arrivalValueList.get(0);
+                    List<Integer> temp = new ArrayList<>(arrivalValueList);
+                    for(int i = 0; i < Collections.frequency(temp, value); i++) {
+                        readyQueue.add(arrivalKeyList.get(0));
+                        arrivalKeyList.remove(0);
+                        arrivalValueList.remove(0);
+                    }    
+                }
+    
+                //check if current process finish execution
+                if (burstTime.get(currentProcess) == 0){
+                    finishTime.put(currentProcess, currentTime);
+                    timestamp.add(currentTime);
+                    burstTime.remove(currentProcess);
+                    currentProcess = getShortestJob();
+                    executionList.add(currentProcess);
+                    readyQueue.remove(currentProcess);
+                    burstTime.put(currentProcess, burstTime.get(currentProcess) - 1);
+                }
+                else{
+                    burstTime.put(currentProcess, burstTime.get(currentProcess) - 1);
+                }
+                
             }
             else{
-                for(int k=0; k<=count; k++, prevPosition++) {
-                    sortedBurst.put(arrKeyList.get(prevPosition), burstTime.get(arrKeyList.get(prevPosition)));
+                if(currentProcess != null){
+                    if(burstTime.get(currentProcess) == 0){
+                        finishTime.put(currentProcess, currentTime);
+                        timestamp.add(currentTime);
+                        burstTime.remove(currentProcess);
+                        currentProcess = getShortestJob();
+                        executionList.add(currentProcess);
+                        readyQueue.remove(currentProcess);
+                    }
+                    burstTime.put(currentProcess, burstTime.get(currentProcess) - 1);
                 }
-                sortedBurst = sortByValue(sortedBurst);
-                SBKey = sortedBurst.keySet();
-                SBKeyList = new ArrayList<>(SBKey);
-
-                for(int m=0; m<SBKeyList.size(); m++) {
-                    executionList.add(SBKeyList.get(m));
-                }                
             }
-            count = 0; 
-            sortedBurst.clear(); 
+            currentTime++; 
         }
 
-        for(int i=0; i<numProcess; i++) {
-            int temp = burstTime.get(executionList.get(i));
-            burstValue.add(i,temp);
-        }
-        timestamp.add(0,0);
-        for(int i=0; i<numProcess; i++){
-            accumulator += burstValue.get(i);
-            timestamp.add(i+1, accumulator);
-            finishTime.put(executionList.get(i), accumulator);
-        }
-        ftKey = finishTime.keySet();
-        ftKeyList = new ArrayList<>(ftKey);
-        ganttChart();
+        timestamp.add(processTime);
+        finishTime.put(currentProcess, processTime);
+
+        ganttChart(executionList.size());
         turnaroundTimeCalc(arrivalTime);
-        waitingTimeCalc(burstTime);
-        printCalcTable(arrivalTime, burstTime);
-    }  
+        waitingTimeCalc();
+        printCalcTable(arrivalTime, burstTime);    
+    }
+    
+
+    public void cloneBurstTimeMap(LinkedHashMap<String, Integer> burstTime){
+        this.burstTime = new LinkedHashMap<>(burstTime);
+        burstTimeClone =  new LinkedHashMap<>(burstTime);
+    }
+
+    public void sortArrivalTime(LinkedHashMap<String, Integer> arrivalTime){
+        sortedArrival = sortByValue(arrivalTime);
+        arrivalValueList = new ArrayList<>(sortedArrival.values());
+        arrivalKey = sortedArrival.keySet();
+        arrivalKeyList = new ArrayList<>(arrivalKey);
+    }
 
     public LinkedHashMap<String, Integer> sortByValue(LinkedHashMap<String, Integer> temp){
         List<Map.Entry<String, Integer>> entries = new ArrayList<>(temp.entrySet());
@@ -108,57 +155,102 @@ class NonPreemptiveSJF{
         return temp;
     }
 
-    public void ganttChart(){
-        for(int i=0; i<numProcess; i++){
-            System.out.print("|---" + executionList.get(i) + "---");
+    public void calculateTotalProcessTime(){
+        for(int i = 0; i < numProcess; i++){
+            processTime += burstTimeClone.get("P"+i);           
         }
-        System.out.println("|");
-        for(int i=0; i<=numProcess; i++){
-            System.out.print(df.format(timestamp.get(i)) + "       ");
+    }
+
+    public String getShortestJob(){
+        String shortest;
+        int time = sortedArrival.get(readyQueue.get(0));
+        int numOfSameArrival = getNumberOfSameArrival(time);
+
+        if(numOfSameArrival == 1){
+            return readyQueue.get(0);
         }
-        System.out.print("\n");
-    } 
+        else{
+            int temp = burstTime.get(readyQueue.get(0));
+            shortest = readyQueue.get(0);
+
+            for(int i = 0; i < numOfSameArrival - 1; i++){
+                if(burstTime.get(readyQueue.get(i+1)) < temp){
+                    temp = burstTime.get(readyQueue.get(i+1));
+                    shortest = readyQueue.get(i+1);
+                }
+            }
+            return shortest;
+        }
+    }
+
+    public int getNumberOfSameArrival(int time){
+        int total = 0;
+        for(int i = 0; i < readyQueue.size(); i++){
+            if(sortedArrival.get(readyQueue.get(i)) == time){
+                total++;
+            }
+        }
+        return total;
+    }
 
     public void turnaroundTimeCalc(LinkedHashMap<String,Integer> arrivalTime) {
         // Finish time - Arrival time
+        ftKey = finishTime.keySet();
+        ftKeyList = new ArrayList<>(ftKey);
         int finish;
         int arr;
-        for(int i=0; i < numProcess; i++) {
+        for(int i = 0; i < numProcess; i++) {
             finish = finishTime.get(ftKeyList.get(i));
-            arr = arrivalTime.get(executionList.get(i));
+            arr = arrivalTime.get(ftKeyList.get(i));
             turnaroundTime.put(ftKeyList.get(i), (finish-arr)); 
         }
     }
 
-    public void waitingTimeCalc(LinkedHashMap<String,Integer> burstTime) {
+    public void waitingTimeCalc() {
         // turnaround time - burst time
         int turnaround;
         int burst;
-        for(int i=0; i < numProcess; i++) {
+        String process;
+
+        for(int i = 0; i < numProcess; i++) {
+            process = "P" + i;
             turnaround = turnaroundTime.get(("P"+i));
-            burst = burstTime.get(("P"+i));
+            burst = burstTimeClone.get(("P"+i));
             waitingTime.put(("P"+i), (turnaround-burst));
         }
     }
+
+    public void ganttChart(int numProcess){
+        for(int i = 0; i < numProcess; i++){
+            System.out.print("|---" + executionList.get(i) + "---");
+        }
+        System.out.println("|");
+        for(int i = 0; i <= numProcess; i++){
+            System.out.print(df.format(timestamp.get(i)) + "       ");
+        }
+        System.out.print("\n");
+    }
     
     public void printCalcTable(LinkedHashMap<String,Integer> arrivalTime, LinkedHashMap<String,Integer> burstTime) {
-        String key;
         int totalTurnaround = 0;
         int totalWaiting = 0;
+        String process;
         System.out.print("\n");
         System.out.println("|-----------|--------------|------------|-------------|-----------------|--------------|");
         System.out.println("|  Process  | Arrival Time | Burst Time | Finish Time | Turnaround Time | Waiting Time |");
         System.out.println("|-----------|--------------|------------|-------------|-----------------|--------------|");
-        for(int i=0; i < numProcess; i++) {
-            key = "P"+i;
-            System.out.println("|  " + key + "       | " + arrivalTime.get(key) + "            | " + burstTime.get(key) + "          | " +
-                               df.format(finishTime.get(key)) + "          | " + df.format(turnaroundTime.get(key)) + "              | " +
-                               df.format(waitingTime.get(key)) + "           |" );
-            totalTurnaround += turnaroundTime.get(key);
-            totalWaiting += waitingTime.get(key);
+        for(int i = 0; i < numProcess; i++) {
+            process = "P"+i;
+            System.out.println("|  " + process + "       | " + arrivalTime.get(process) + "            | " + burstTimeClone.get(process) + "          | " +
+                               df.format(finishTime.get(process)) + "          | " + df.format(turnaroundTime.get(process)) + "              | " +
+                               df.format(waitingTime.get(process)) + "           |" );
+            totalTurnaround += turnaroundTime.get(process);
+            totalWaiting += waitingTime.get(process);
         }
         System.out.println("|--------------------------------------------------------------------------------------|");
         System.out.println("Average Turnaround time: " + (totalTurnaround/numProcess));
         System.out.println("Average Waiting time   : " + (totalWaiting/numProcess));
     }
+
+
 }
